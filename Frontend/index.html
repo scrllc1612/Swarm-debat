@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        Sistema de Debate Académico Multiagente
+    </title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>
+            Sistema de Debate Académico Multiagente
+        </h1>
+
+        <p class="subtitle">
+            Generación y evaluación de debates académicos sintéticos
+        </p>
+
+        <!-- ====================================== -->
+        <!-- CONFIGURACIÓN -->
+        <!-- ====================================== -->
+
+        <div class="card">
+
+            <h2>Configuración del debate</h2>
+
+            <label for="arquitectura">
+                Selecciona una arquitectura:
+            </label>
+
+            <select id="arquitectura">
+
+                <option value="A2">
+                    A2 - Jerárquica Síncrona
+                </option>
+
+                <option value="A4">
+                    A4 - Swarm Intelligence
+                </option>
+
+                <option value="A1">
+                    A1 - Secuencial Simple
+                </option>
+
+
+            </select>
+
+            <label for="tema">
+                Tema del debate:
+            </label>
+
+            <textarea id="tema"
+                placeholder="Ejemplo: El uso de inteligencia artificial en la educación superior mejora el rendimiento académico">
+            </textarea>
+
+            <button id="btnGenerar" onclick="generarDebate()">
+
+                Generar debate
+
+            </button>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- DEBATE -->
+        <!-- ====================================== -->
+
+        <div class="card">
+
+            <h2>Debate generado</h2>
+
+            <div id="debate" class="output">
+
+                Aquí aparecerá el debate generado.
+
+            </div>
+
+            <button id="btnEvaluar" onclick="evaluarDebate()" class="secondary">
+
+                Evaluar debate
+
+            </button>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- MÉTRICAS -->
+        <!-- ====================================== -->
+
+        <div class="card">
+
+            <h2>Métricas del debate</h2>
+
+            <div id="metricas" class="output">
+
+                Aquí aparecerán los resultados de evaluación.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="./app.js?v=25"></script>
+
+</body>
+
+</html>
