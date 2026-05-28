@@ -1,14 +1,42 @@
-from evaluator_A1 import evaluar_debate_a1
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
+
+# =========================
+# IMPORTAR ARQUITECTURAS LANGFLOW
+# =========================
+
+from architectures.Langflow.a1 import run_langflow_a1
+from architectures.Langflow.a2 import run_langflow_a2
+from architectures.Langflow.a3 import run_langflow_a3
+from architectures.Langflow.a4 import run_langflow_a4
+
+# =========================
+# IMPORTAR ARQUITECTURAS FLOWISE
+# =========================
+
+from architectures.Flowise.a1 import run_flowise_a1
+from architectures.Flowise.a2 import run_flowise_a2
+from architectures.Flowise.a3 import run_flowise_a3
+from architectures.Flowise.a4 import run_flowise_a4
+
+# =========================
+# IMPORTAR EVALUADORES
+# =========================
 
 from evaluator_A2 import evaluar_debate
-
 from evaluador_A4 import evaluar_debate_a4
+from evaluator_A1 import evaluar_debate_a1
+
+# =========================
+# FASTAPI
+# =========================
 
 app = FastAPI()
+
+# =========================
+# CORS
+# =========================
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,17 +46,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-FLOWISE_A1_URL = "https://cloud.flowiseai.com/api/v1/prediction/83b071ed-57dd-4cb4-aa1c-d6a5f3ce3a13"
-
-FLOWISE_A2_URL = "http://localhost:3000/api/v1/prediction/fbd744d0-4e9f-4f82-8760-91b4d23eb18e"
-
-FLOWISE_A4_URL = "http://localhost:3000/api/v1/prediction/aac045d2-20e8-4147-b1b6-d2f16b4b0b27"
-
-
+# =========================
+# MEMORIA TEMPORAL
+# =========================
 
 ultimo_debate = {
     "tema": "",
     "arquitectura": "",
+    "framework": "",
     "debate": ""
 }
 
@@ -38,6 +63,7 @@ ultimo_debate = {
 
 class DebateRequest(BaseModel):
     tema: str
+    framework: str
     arquitectura: str
 
 # =========================
@@ -46,8 +72,9 @@ class DebateRequest(BaseModel):
 
 @app.get("/")
 def home():
+
     return {
-        "message": "Backend de debates funcionando correctamente"
+        "message": "Backend Multiagente funcionando correctamente"
     }
 
 # =========================
@@ -55,69 +82,95 @@ def home():
 # =========================
 
 @app.post("/generar-debate")
-def generar_debate(request: DebateRequest):
-
-    # -------------------------
-    # Selección de arquitectura
-    # -------------------------
-
-    if request.arquitectura == "A2":
-        flow_url = FLOWISE_A2_URL
-        nombre_arquitectura = "A2 - Jerárquica Síncrona"
-
-    elif request.arquitectura == "A4":
-        flow_url = FLOWISE_A4_URL
-        nombre_arquitectura = "A4 - Swarm Intelligence"
-
-    elif request.arquitectura == "A1":
-        flow_url = FLOWISE_A1_URL
-        nombre_arquitectura = "A1 - Secuencial Simple"
-
-    else:
-        return {
-            "error": "Arquitectura no válida"
-        }
-
-    # -------------------------
-    # Payload para Flowise
-    # -------------------------
-
-    payload = {
-        "question": request.tema
-    }
+async def generar_debate(request: DebateRequest):
 
     try:
 
-        # -------------------------
-        # Request a Flowise
-        # -------------------------
+        resultado = None
+        nombre_arquitectura = ""
 
-        response = requests.post(flow_url, json=payload)
+        # ==================================================
+        # FLOWISE
+        # ==================================================
 
-        response.raise_for_status()
+        if request.framework.lower() == "flowise":
 
-        data = response.json()
+            if request.arquitectura == "A1":
+                resultado = await run_flowise_a1(request.tema)
+                nombre_arquitectura = "A1 - Secuencial Simple"
 
-        # -------------------------
-        # Obtener texto generado
-        # -------------------------
+            elif request.arquitectura == "A2":
+                resultado = await run_flowise_a2(request.tema)
+                nombre_arquitectura = "A2 - Jerárquica Síncrona"
 
-        debate = data.get("text", data)
+            elif request.arquitectura == "A3":
+                resultado = await run_flowise_a3(request.tema)
+                nombre_arquitectura = "A3 - Secuencial Deliberativa"
 
-        # -------------------------
-        # Guardar último debate
-        # -------------------------
+            elif request.arquitectura == "A4":
+                resultado = await run_flowise_a4(request.tema)
+                nombre_arquitectura = "A4 - Swarm Intelligence"
+
+        # ==================================================
+        # LANGFLOW
+        # ==================================================
+
+        elif request.framework.lower() == "langflow":
+
+            if request.arquitectura == "A1":
+                resultado = await run_langflow_a1(request.tema)
+                nombre_arquitectura = "A1 - Secuencial Simple"
+
+            elif request.arquitectura == "A2":
+                resultado = await run_langflow_a2(request.tema)
+                nombre_arquitectura = "A2 - Jerárquica Síncrona"
+
+            elif request.arquitectura == "A3":
+                resultado = await run_langflow_a3(request.tema)
+                nombre_arquitectura = "A3 - Secuencial Deliberativa"
+
+            elif request.arquitectura == "A4":
+                resultado = await run_langflow_a4(request.tema)
+                nombre_arquitectura = "A4 - Swarm Intelligence"
+
+        else:
+
+            return {
+                "error": "Framework no válido"
+            }
+
+        # ==================================================
+        # VALIDAR RESULTADO
+        # ==================================================
+
+        if resultado is None:
+
+            return {
+                "error": "Arquitectura no válida"
+            }
+
+        # ==================================================
+        # EXTRAER TEXTO
+        # ==================================================
+
+        debate = resultado.get("text", resultado)
+
+        # ==================================================
+        # GUARDAR ÚLTIMO DEBATE
+        # ==================================================
 
         ultimo_debate["tema"] = request.tema
         ultimo_debate["arquitectura"] = nombre_arquitectura
+        ultimo_debate["framework"] = request.framework
         ultimo_debate["debate"] = debate
 
-        # -------------------------
-        # Response final
-        # -------------------------
+        # ==================================================
+        # RESPONSE
+        # ==================================================
 
         return {
             "tema": request.tema,
+            "framework": request.framework,
             "arquitectura": nombre_arquitectura,
             "debate": debate
         }
@@ -139,14 +192,22 @@ def evaluar_ultimo_debate():
     if not ultimo_debate["debate"]:
 
         return {
-            "error": "No hay debate generado para evaluar. Primero genera un debate."
+            "error": "No hay debate generado para evaluar"
         }
 
-    # ======================================
-    # Evaluador según arquitectura
-    # ======================================
+    # ==================================================
+    # EVALUADORES
+    # ==================================================
 
-    if "A2" in ultimo_debate["arquitectura"]:
+    if "A1" in ultimo_debate["arquitectura"]:
+
+        resultado = evaluar_debate_a1(
+            tema=ultimo_debate["tema"],
+            arquitectura=ultimo_debate["arquitectura"],
+            debate=ultimo_debate["debate"]
+        )
+
+    elif "A2" in ultimo_debate["arquitectura"]:
 
         resultado = evaluar_debate(
             tema=ultimo_debate["tema"],
@@ -157,14 +218,6 @@ def evaluar_ultimo_debate():
     elif "A4" in ultimo_debate["arquitectura"]:
 
         resultado = evaluar_debate_a4(
-            tema=ultimo_debate["tema"],
-            arquitectura=ultimo_debate["arquitectura"],
-            debate=ultimo_debate["debate"]
-        )
-
-    elif "A1" in ultimo_debate["arquitectura"]:
-
-        resultado = evaluar_debate_a1(
             tema=ultimo_debate["tema"],
             arquitectura=ultimo_debate["arquitectura"],
             debate=ultimo_debate["debate"]

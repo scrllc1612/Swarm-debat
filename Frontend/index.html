@@ -1,106 +1,239 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Multiagente de Debates Académicos</title>
 
-    <title>
-        Sistema de Debate Académico Multiagente
-    </title>
-
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="container">
+<!-- ===================================== -->
+<!-- HEADER -->
+<!-- ===================================== -->
+
+<header class="header">
+
+    <div class="header-content">
 
         <h1>
-            Sistema de Debate Académico Multiagente
+            Sistema Multiagente para Debates Académicos
         </h1>
 
-        <p class="subtitle">
-            Generación y evaluación de debates académicos sintéticos
+        <p>
+            Comparación experimental de arquitecturas multiagente
+            implementadas en Flowise y Langflow
         </p>
 
-        <!-- ====================================== -->
-        <!-- CONFIGURACIÓN -->
-        <!-- ====================================== -->
+    </div>
 
-        <div class="card">
+</header>
 
-            <h2>Configuración del debate</h2>
+<!-- ===================================== -->
+<!-- MAIN -->
+<!-- ===================================== -->
+
+<main class="main-container">
+
+    <!-- ===================================== -->
+    <!-- PANEL CONFIGURACIÓN -->
+    <!-- ===================================== -->
+
+    <section class="config-panel">
+
+        <h2>
+            Configuración del Debate
+        </h2>
+
+        <!-- Framework -->
+
+        <div class="form-group">
+
+            <label for="framework">
+                Framework
+            </label>
+
+            <select id="framework">
+
+                <option value="langflow">
+                    Langflow
+                </option>
+
+                <option value="flowise">
+                    Flowise
+                </option>
+
+            </select>
+
+        </div>
+
+        <!-- Arquitectura -->
+
+        <div class="form-group">
 
             <label for="arquitectura">
-                Selecciona una arquitectura:
+                Arquitectura Multiagente
             </label>
 
             <select id="arquitectura">
 
+                <option value="A1">
+                    A1 - Secuencial Simple
+                </option>
+
                 <option value="A2">
                     A2 - Jerárquica Síncrona
+                </option>
+
+                <option value="A3">
+                    A3 - Secuencial Deliberativa
                 </option>
 
                 <option value="A4">
                     A4 - Swarm Intelligence
                 </option>
 
-                <option value="A1">
-                    A1 - Secuencial Simple
-                </option>
-
-
             </select>
 
+        </div>
+
+        <!-- Tema -->
+
+        <div class="form-group">
+
             <label for="tema">
-                Tema del debate:
+                Tema del Debate
             </label>
 
-            <textarea id="tema"
-                placeholder="Ejemplo: El uso de inteligencia artificial en la educación superior mejora el rendimiento académico">
-            </textarea>
+            <textarea
+                    id="tema"
+                    placeholder="Escribe el tema del debate académico..."
+            ></textarea>
 
-            <button id="btnGenerar" onclick="generarDebate()">
+        </div>
 
-                Generar debate
+        <!-- Botones -->
 
+        <div class="buttons-container">
+
+            <button id="btnGenerar">
+                Generar Debate
+            </button>
+
+            <button id="btnEvaluar">
+                Evaluar Debate
+            </button>
+
+            <button id="btnLimpiar">
+                Limpiar
             </button>
 
         </div>
 
-        <!-- ====================================== -->
-        <!-- DEBATE -->
-        <!-- ====================================== -->
+    </section>
 
-        <div class="card">
+    <!-- ===================================== -->
+    <!-- PANEL RESULTADOS -->
+    <!-- ===================================== -->
 
-            <h2>Debate generado</h2>
+    <section class="results-panel">
 
-            <div id="debate" class="output">
+        <div class="results-header">
 
-                Aquí aparecerá el debate generado.
+            <h2>
+                Resultado del Debate
+            </h2>
+
+            <div class="status-badge" id="statusBadge">
+                Esperando ejecución...
+            </div>
+
+        </div>
+
+        <!-- Información -->
+
+        <div class="debate-info">
+
+            <div class="info-card">
+
+                    <span class="info-title">
+                        Framework
+                    </span>
+
+                <span class="info-value" id="frameworkInfo">
+                        -
+                    </span>
 
             </div>
 
-            <button id="btnEvaluar" onclick="evaluarDebate()" class="secondary">
+            <div class="info-card">
 
-                Evaluar debate
+                    <span class="info-title">
+                        Arquitectura
+                    </span>
 
+                <span class="info-value" id="arquitecturaInfo">
+                        -
+                    </span>
+
+            </div>
+
+        </div>
+
+        <!-- Debate -->
+
+        <div class="debate-container">
+
+            <div id="resultadoDebate">
+
+                <div class="placeholder">
+
+                    <h3>
+                        Sistema listo
+                    </h3>
+
+                    <p>
+                        Selecciona un framework, una arquitectura y genera un debate.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- ===================================== -->
+<!-- MODAL EVALUACIÓN -->
+<!-- ===================================== -->
+
+<div class="modal" id="evaluationModal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Evaluación del Debate
+            </h2>
+
+            <button class="close-modal" id="closeModal">
+                ✕
             </button>
 
         </div>
 
-        <!-- ====================================== -->
-        <!-- MÉTRICAS -->
-        <!-- ====================================== -->
+        <div class="modal-body">
 
-        <div class="card">
+            <div id="evaluationResults">
 
-            <h2>Métricas del debate</h2>
-
-            <div id="metricas" class="output">
-
-                Aquí aparecerán los resultados de evaluación.
+                <div class="loading">
+                    Evaluando debate...
+                </div>
 
             </div>
 
@@ -108,8 +241,31 @@
 
     </div>
 
-    <script src="./app.js?v=25"></script>
+</div>
+
+<!-- ===================================== -->
+<!-- LOADER -->
+<!-- ===================================== -->
+
+<div class="loader-overlay" id="loaderOverlay">
+
+    <div class="loader-content">
+
+        <div class="spinner"></div>
+
+        <p>
+            Generando debate multiagente...
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- SCRIPT -->
+<!-- ===================================== -->
+
+<script src="script.js"></script>
 
 </body>
-
 </html>
